@@ -12,7 +12,7 @@ int node_compare(const void *a, const void *b)
     return strcmp(node_a->node_name, node_b->node_name);
 }
 
-
+ 
 struct Edge* new_edge(int index_second, int weight)
 {
     struct Edge* new_node =  malloc(sizeof(Edge));
@@ -202,48 +202,48 @@ void dijkstra(struct Graph* graph, int start, int end, struct GraphNode *graph_n
 void get_routes(char* routes, int start_node_length, int end_node_length, int number_of_nodes, int cursor, struct GraphNode *graph_node, struct Graph* graph){
     int max_length = strlen(routes);
 
-    find_node_length(0, max_length, routes);
-    start_node_length = node_length;
+        find_node_length(0, max_length, routes);
+        start_node_length = node_length;
 
-    find_node_length(start_node_length + 1, max_length, routes);
-    end_node_length = node_length;
+        find_node_length(start_node_length + 1, max_length, routes);
+        end_node_length = node_length;
+  
+        char *start_node = malloc((start_node_length + 1) * sizeof(char));
+        char *end_node = malloc((end_node_length  + 1) * sizeof(char));
 
-    char *start_node = malloc((start_node_length + 1) * sizeof(char));
-    char *end_node = malloc((end_node_length  + 1) * sizeof(char));
-
-    find_node_word(0, start_node_length, routes, start_node);
-    cursor = node_length;        
-    find_node_word(cursor + 1, max_length - 1, routes, end_node);
-    
-    int start_index = 0; int end_index = 0; 
-    for (int x = 0; x < number_of_nodes; x++ ){
-        if (strcasecmp(start_node, graph_node[x].node_name) == 0){
-            start_index = graph_node[x].index;
+        find_node_word(0, start_node_length, routes, start_node);
+        cursor = node_length;        
+        find_node_word(cursor + 1, max_length - 1, routes, end_node);
+        
+        int start_index = 0; int end_index = 0; 
+        for (int x = 0; x < number_of_nodes; x++ ){
+            if (strcasecmp(start_node, graph_node[x].node_name) == 0){
+                start_index = graph_node[x].index;
+            }
+            if (strcasecmp(end_node, graph_node[x].node_name)== 0){
+                end_index = graph_node[x].index;
+                
+            }
         }
-        if (strcasecmp(end_node, graph_node[x].node_name)== 0){
-            end_index = graph_node[x].index;
-            
-        }
-    }
-    dijkstra(graph, start_index, end_index, graph_node);
+        dijkstra(graph, start_index, end_index, graph_node);
 
-    free(start_node);
-    free(end_node);
+        free(start_node);
+        free(end_node);
         
 }
 
 int find_node_length(int start, int max_length, char *links){
     node_length = 0;
     for (int i = 0; i < max_length; i ++)
-        {
-            if(links[i] != ' '){
-                node_length ++;
-            }
-            else
-            {
-                break;
-            }
+    {
+        if(links[i] != ' '){
+            node_length ++;
         }
+        else
+        {
+            break;
+        }
+    }
     return node_length;
 }
 
@@ -251,15 +251,15 @@ char *find_node_word(int start, int max_length, char *links, char *node_name){
     node_length = 0;
     
     for (int i = start; i < max_length; i ++)
-        {
-            if(links[i] != ' '){
-                node_name[node_length] = links[i];
-                node_length ++;
-            }
-            else
-            {
-                break;
-            }
+    {
+        if(links[i] != ' '){
+            node_name[node_length] = links[i];
+            node_length ++;
         }
+        else
+        {
+            break;
+        }
+    }
     return node_name;
 }
