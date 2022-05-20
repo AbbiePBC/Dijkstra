@@ -1,15 +1,13 @@
 #include <assert.h> //to do: use assert in some places instead of ret vals
-#include <stdio.h>
-#include <stdlib.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <string.h>
 
-#include "graph_functions.h"
+#include "read_input.h"
 
 int edge_weight[100];  //arbitrary max
 int start;
-int node_length;
+int node_word_length;
 
 int parse_file(char *filename);
 
@@ -26,82 +24,57 @@ int main(int argc, char *argv[])
 }    
 
 
-void read_nodes(char* nodes, int number_of_nodes, struct GraphNode *graph_node, size_t len, FILE *file){
-    for (int i = 0; i < number_of_nodes; i++){
-        int n = getline(&nodes, &len, file);
-        nodes[n - 1] = '\0';
-        graph_node[i].node_name = malloc(n * sizeof(char));
-        strcpy(graph_node[i].node_name, nodes);
-        graph_node[i].index = i;
+bool add_node_to_graph(int *index, int number_of_nodes, char *first_node, 
+                  struct GraphNode *sorted_nodes){
+    struct GraphNode first_node_to_find = {
+        .node_name = first_node,
+    };
+    struct GraphNode *found;
+    // if we sort the graph as we're making it, we have a sorted graph, 
+    // which is then easier to search
+    found = bsearch(&first_node_to_find, sorted_nodes, number_of_nodes, 
+            sizeof(struct GraphNode), &node_compare);
+    if (found) {
+        *index = found->index;
+    } else {
+        printf("edge starts from nonexistent node\n");
     }
-}
+    return found;
 
-
-int read_edge_count(int number_of_nodes, size_t len, FILE *file){
-    char *edges_count = NULL;
-    for (int j = number_of_nodes + 1; j < number_of_nodes + 3; j++){
-        getline(&edges_count, &len, file);
-    }
-    return atoi(edges_count);
 }
 
 int read_edges_add_to_graph(int current_line, int num_edges, size_t len, FILE* file, 
     struct Graph* graph, int number_of_nodes, struct GraphNode *sorted_nodes ){
     
     int index_first = 0; int index_second = 0;
-    char *links = NULL;
+    char *edges = NULL;
 
     for (int j = current_line; j < current_line + num_edges; j++){
-        int current_length = 0; 
-        getline(&links, &len, file);
-        int max_length = strlen(links);
+        getline(&edges, &len, file);
+        int max_length = strlen(edges);
 
-        find_node_length(0, max_length, links);
-        char *first_node = malloc((node_length + 1) * sizeof(char));
-        find_node_word(start, max_length, links, first_node);
-        current_length = node_length;
-
-        
-
-        struct GraphNode first_node_to_find = {
-            .node_name = first_node,
-        };
-        struct GraphNode *found;
-        found = bsearch(&first_node_to_find, sorted_nodes, number_of_nodes, sizeof(struct GraphNode), &node_compare);
-        if (found) {
-            index_first = found->index;
-        } else {
-            printf("edge starts from nonexistent node\n");
-            return 1;
-        }
-
-        current_length ++;
-        int new_length = current_length; 
+        find_node_word_length(0, max_length, edges);
+        char *first_node = malloc((node_word_length + 1) * sizeof(char));
+        find_node_word(start, max_length, edges, first_node);
+        int current_idx_through_line = node_word_length;
+        add_node_to_graph(&index_first, number_of_nodes, first_node, sorted_nodes);
+        current_idx_through_line ++;
+        int new_length = current_idx_through_line; // to do: fix this
        
-        char *second_node = malloc((node_length + 1) * sizeof(char));
-        find_node_length(current_length, max_length, links);
-        find_node_word(current_length, max_length, links, second_node);
+        char *second_node = malloc((node_word_length + 1) * sizeof(char));
+        find_node_word_length(current_idx_through_line, max_length, edges);
+        find_node_word(current_idx_through_line, max_length, edges, second_node);
+        add_node_to_graph(&index_second, number_of_nodes, second_node, sorted_nodes);
 
-        struct GraphNode second_node_to_find = {
-            .node_name = second_node,
-        };
-        found = bsearch(&second_node_to_find, sorted_nodes, number_of_nodes, sizeof(struct GraphNode), &node_compare);
-        if (found) {
-            index_second = found->index;
-        } else {
-            printf("edge ends from nonexistent node\n");
-            return 1;
-        }
+        current_idx_through_line = node_word_length + new_length;
 
-        current_length = node_length + new_length;
-
-        find_node_length(current_length + 1, max_length - 1, links);
-        int weight_length = node_length;
+        find_node_word_length(current_idx_through_line + 1, max_length - 1, edges);
+        int weight_length = node_word_length;
         char *weight = malloc(weight_length * sizeof(int));
-        find_node_word(current_length + 1, max_length - 1, links, weight);
+        find_node_word(current_idx_through_line + 1, max_length - 1, edges, weight);
 
-        edge_weight[node_length] = atoi(weight); 
-        add_edge(graph, index_first, index_second,  edge_weight[node_length]);
+        edge_weight[node_word_length] = atoi(weight); 
+        add_edge(graph, index_first, index_second,  edge_weight[node_word_length]);
 
         free(weight);
     }
@@ -144,8 +117,8 @@ int parse_file(char *filename)
 
     char* nodes = NULL;
 
-    read_nodes(nodes, number_of_nodes, graph_node, len, file);
-    int num_edges = read_edge_count(number_of_nodes, len, file);
+    read_nodes_from_file(nodes, number_of_nodes, graph_node, len, file);
+    int num_edges = read_edge_count_from_file(number_of_nodes, len, file);
 
     int current_line = number_of_nodes + 2;
 
@@ -166,11 +139,10 @@ int parse_file(char *filename)
     char *routes = NULL;
     getline(&routes, &len, file);
 
-    current_line = current_line + num_edges + 1;
-    int start_node_length = 0; int end_node_length = 0; int cursor = 0;
+    int start_node_word_length = 0; int end_node_word_length = 0; int cursor = 0;
     
     while (getline(&routes, &len, file) != EOF)
-        get_routes(routes, start_node_length, end_node_length, number_of_nodes, cursor, graph_node, graph);
+        get_routes(routes, start_node_word_length, end_node_word_length, number_of_nodes, cursor, graph_node, graph);
 
     free_graph(number_of_nodes, graph);    
 

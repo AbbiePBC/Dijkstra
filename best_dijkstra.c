@@ -202,10 +202,10 @@ void dijkstra(struct Graph* graph, int start, int end, struct GraphNode *graph_n
 void get_routes(char* routes, int start_node_length, int end_node_length, int number_of_nodes, int cursor, struct GraphNode *graph_node, struct Graph* graph){
     int max_length = strlen(routes);
 
-    find_node_length(0, max_length, routes);
+    find_node_word_length(0, max_length, routes);
     start_node_length = node_length;
 
-    find_node_length(start_node_length + 1, max_length, routes);
+    find_node_word_length(start_node_length + 1, max_length, routes);
     end_node_length = node_length;
 
     char *start_node = malloc((start_node_length + 1) * sizeof(char));
@@ -232,28 +232,29 @@ void get_routes(char* routes, int start_node_length, int end_node_length, int nu
         
 }
 
-int find_node_length(int start, int max_length, char *links){
+// avoid using strtok which would modify the string
+int find_node_word_length(int start, int max_length, char *edges){
     node_length = 0;
     for (int i = 0; i < max_length; i ++)
-        {
-            if(links[i] != ' '){
-                node_length ++;
-            }
-            else
-            {
-                break;
-            }
+    {
+        if(edges[i] != ' '){
+            node_length ++;
         }
+        else
+        {
+            break;
+        }
+    }
     return node_length;
 }
 
-char *find_node_word(int start, int max_length, char *links, char *node_name){
+char *find_node_word(int start, int max_length, char *edges, char *node_name){
     node_length = 0;
     
     for (int i = start; i < max_length; i ++)
         {
-            if(links[i] != ' '){
-                node_name[node_length] = links[i];
+            if(edges[i] != ' '){
+                node_name[node_length] = edges[i];
                 node_length ++;
             }
             else

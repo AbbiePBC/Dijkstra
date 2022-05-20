@@ -3,7 +3,7 @@
 int infinity = 100000; //max to represent no route found (yet)
 int edge_weight[100];  //arbitrary max
 int start;
-int node_length;
+int node_word_length;
 
 int node_compare(const void *a, const void *b)
 {
@@ -199,20 +199,20 @@ void dijkstra(struct Graph* graph, int start, int end, struct GraphNode *graph_n
 
 
 
-void get_routes(char* routes, int start_node_length, int end_node_length, int number_of_nodes, int cursor, struct GraphNode *graph_node, struct Graph* graph){
+void get_routes(char* routes, int start_node_word_length, int end_node_word_length, int number_of_nodes, int cursor, struct GraphNode *graph_node, struct Graph* graph){
     int max_length = strlen(routes);
 
-        find_node_length(0, max_length, routes);
-        start_node_length = node_length;
+        find_node_word_length(0, max_length, routes);
+        start_node_word_length = node_word_length;
 
-        find_node_length(start_node_length + 1, max_length, routes);
-        end_node_length = node_length;
+        find_node_word_length(start_node_word_length + 1, max_length, routes);
+        end_node_word_length = node_word_length;
   
-        char *start_node = malloc((start_node_length + 1) * sizeof(char));
-        char *end_node = malloc((end_node_length  + 1) * sizeof(char));
+        char *start_node = malloc((start_node_word_length + 1) * sizeof(char));
+        char *end_node = malloc((end_node_word_length  + 1) * sizeof(char));
 
-        find_node_word(0, start_node_length, routes, start_node);
-        cursor = node_length;        
+        find_node_word(0, start_node_word_length, routes, start_node);
+        cursor = node_word_length;        
         find_node_word(cursor + 1, max_length - 1, routes, end_node);
         
         int start_index = 0; int end_index = 0; 
@@ -232,29 +232,29 @@ void get_routes(char* routes, int start_node_length, int end_node_length, int nu
         
 }
 
-int find_node_length(int start, int max_length, char *links){
-    node_length = 0;
+int find_node_word_length(int start, int max_length, char *links){
+    node_word_length = 0;
     for (int i = 0; i < max_length; i ++)
     {
         if(links[i] != ' '){
-            node_length ++;
+            node_word_length ++;
         }
         else
         {
             break;
         }
     }
-    return node_length;
+    return node_word_length;
 }
 
 char *find_node_word(int start, int max_length, char *links, char *node_name){
-    node_length = 0;
+    node_word_length = 0;
     
     for (int i = start; i < max_length; i ++)
     {
         if(links[i] != ' '){
-            node_name[node_length] = links[i];
-            node_length ++;
+            node_name[node_word_length] = links[i];
+            node_word_length ++;
         }
         else
         {
@@ -262,4 +262,5 @@ char *find_node_word(int start, int max_length, char *links, char *node_name){
         }
     }
     return node_name;
+    // since we reurn node_name, this doesn't need to be passed in
 }

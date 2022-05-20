@@ -8,7 +8,7 @@ This repo was created to document the initial state of the code as well as to (h
 
 ### Compilaton
 
-```gcc -o <bin> main.c graph_functions.c```
+```gcc -o <bin> main.c graph_functions.c read_input.c```
 
 ### Usage
 
